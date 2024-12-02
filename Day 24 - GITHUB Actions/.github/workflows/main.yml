@@ -1,0 +1,21 @@
+name: CML
+on: [push]
+jobs:
+  train-and-report:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    container: docker://ghcr.io/iterative/cml:0-dvc2-base1
+    steps:
+      - uses: actions/checkout@v3
+      - name: Train model
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip install -r requirements.txt
+          python trailnotebook.py  # generate plot.png
+
+          # Create CML report
+          cat train.txt >> report.md
+          cat test.txt >> report.md
+          echo '![](./heatmap.png "Confusion Matrix heat map")' >> report.md
+          cml comment create report.md
